@@ -52,7 +52,7 @@ Before starting, ensure you have the following installed:
 
 4. **Set your API key in the environment variable**
 
-   Configure your OpenAI API key for the application.
+   In `.local/settings.dev.py`, configure your OpenAI API key for the application.
 
    ```python
    os.environ["OPENAI_API_KEY"] = ""  # type: ignore  # noqa: F821
