@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.http import Http404, HttpResponse, JsonResponse
 from django.template import loader
+from django.utils.text import get_valid_filename
 from markdown2 import markdown
 
 from .models import Message, Response
@@ -46,19 +47,22 @@ def sendMessage(request):
 
 def receiveResponse(request):
     if request.method == "POST":
-        # File path fixing
         file = request.FILES.get("file")
-        filePath = (
-            default_storage.save(join(settings.MEDIA_ROOT, "uploads", file.name), file)
-            if file
-            else None
-        )
-        if filePath and not isabs(filePath):
-            filePath = join(settings.MEDIA_ROOT, "uploads", filePath.split("/")[1])
+
+        # File path fixing
+        filePath = None
+        if file:
+            safeFilename = get_valid_filename(file.name)
+
+            relativePath = join("uploads", safeFilename)
+            filePath = default_storage.save(relativePath, file)
+
+            if not isabs(filePath):
+                filePath = join(settings.MEDIA_ROOT, filePath)
 
         responseText = ""
 
-        log.info(f'sent message: {request.POST['message']}')
+        log.info(f"sent message: {request.POST['message']}")
         log.info(f"file sent? {filePath}")
 
         # For some reason filePath is reset so redefining it to a variable
